@@ -1,0 +1,148 @@
+#default config
+#Date: 2018.01.02
+#Author: Loon
+
+[General]
+ipv6 = false
+skip-proxy = 192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,localhost,*.local,e.crashlynatics.com
+bypass-tun = 10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,172.16.0.0/12,192.0.0.0/24,192.0.2.0/24,192.88.99.0/24,192.168.0.0/16,198.18.0.0/15,198.51.100.0/24,203.0.113.0/24,224.0.0.0/4,255.255.255.255/32
+dns-server = system,
+allow-udp-proxy = false
+allow-wifi-access = true
+wifi-access-http-port = 7222
+wifi-access-socket5-port = 7221
+proxy-test-url = http://www.qualcomm.cn/generate_204
+test-timeout = 3
+
+[Proxy]
+香港-专线入口-01 = vmess,iplc-ct2.vza-v2ray.space,30006,chacha20-ietf-poly1305,"2338228b-c134-3d8e-b2d8-c716ceb90f34",transport:ws,path:/stream/vzclub,host:hg-aws2.vza-v2ray.space,tls-name:hg-aws2.vza-v2ray.space
+Web 香港 I-通用 = ShadowsocksR,hk13.yuji.ooo,27777,aes-256-cfb,"QHPy2u",auth_aes128_sha1,{113:UNknRp},http_simple,{3f697113.download.windowsupdate.com}
+
+[Rule]
+#Type:DOMAIN-SUFFIX,DOMAIN,DOMAIN-KEYWORD,USER-AGENT,URL-REGEX,IP-CIDR
+#Strategy:DIRECT,PROXY,REJECT
+#Options:force-remote-dns(Default:false),no-resolve
+
+# DOMAIN-KEYWORD,google,PROXY,force-remote-dns
+# DOMAIN-KEYWORD,facebook,PROXY,force-remote-dns
+# DOMAIN-KEYWORD,youtube,PROXY,force-remote-dns
+# DOMAIN-KEYWORD,twitter,PROXY,force-remote-dns
+# DOMAIN-KEYWORD,instagram,PROXY,force-remote-dns
+# DOMAIN-KEYWORD,gmail,PROXY,force-remote-dns
+# DOMAIN-SUFFIX,twimg.com,PROXY,force-remote-dns
+# DOMAIN-SUFFIX,t.co,PROXY,force-remote-dns
+# IP-CIDR,91.108.56.0/22,PROXY,no-resolve
+# IP-CIDR,91.108.4.0/22,PROXY,no-resolve
+# IP-CIDR,109.239.140.0/24,PROXY,no-resolve
+# IP-CIDR,149.154.160.0/20,PROXY,no-resolve
+# IP-CIDR,192.168.0.0/16,DIRECT
+# IP-CIDR,10.0.0.0/8,DIRECT
+# IP-CIDR,172.16.0.0/12,DIRECT
+# IP-CIDR,127.0.0.0/8,DIRECT
+
+GEOIP,cn,DIRECT
+FINAL,DIRECT
+
+[URL Rewrite]
+enable = false
+^https?:\/\/(www.)?(g|google)\.cn https://www.google.com 302
+
+[Script]
+enable = true
+# > 上次更新的内容
+# >>> 增加 "十元脚" 脚本, 每日 00:12 执行任务
+
+# > 获取京东Cookie 
+# >>> 获取地址在下方,复制到浏览器打开,使用手机号登陆,点击签到即可
+#bean.m.jd.com
+http-request ^https:\/\/api\.m\.jd\.com\/client\.action.*functionId=signBean, script-path=https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js,tag=获取京东Cookie 
+
+# > 京东京豆系列
+# >>> 取消关注 {23:59}
+cron "30 59 23 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_unsubscribe.js,tag=取消关注 
+# >>> 京东京豆 {*/12:01} (双号执行时长 60s 左右)
+cron "0 1,3 */12 * * *",script-path=https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js,tag=京豆 
+# >>> 京东京豆变动 {09:00}
+cron "0 0 9 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_bean_change.js,tag=京豆变动通知 
+
+# > 游戏京豆系列
+# >>> 兑换类
+# >>>>> 宠汪汪兑换京豆 {07:59 15:59}
+cron "0 0 8,16 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy_reward.js,tag=宠汪汪——兑换京豆 
+# >>>>> 第一次执行,大概率失败 {23：59}
+cron "59 59 23 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_blueCoin.js,tag=东东超市——第一次兑换京豆 
+# >>>>> 第二次执行,可以执行完毕 {00:04}
+cron "0 4 0 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_blueCoin.js,tag=东东超市——第二次兑换京豆 
+
+# >>> 宠汪汪系列
+# >>>>> 辅助脚本
+http response ^https:\/\/jdjoy\.jd\.com\/pet\/getPetTreasureBox|^https:\/\/draw\.jdfcloud\.com\/\/pet\/getPetTreasureBox, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_petTreasureBox.js,tag=聚宝盆辅助 
+# >>>>> 偷粮 {00:04 06:04}
+cron "30 4 0,6 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy_steal.js,tag=宠汪汪——偷粮 
+# >>>>> 喂食 (不追求每日"8"次全部成功,单独分"7"次执行,以确保成功喂食，从早上开始每次喂食间隔 183 分钟)
+cron "0 30 0 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy_feedPets.js,tag=宠汪汪——首次 
+cron "0 51 5 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy_feedPets.js,tag=宠汪汪——第二次 
+cron "0 54 8 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy.js,tag=宠汪汪——早餐 
+cron "0 57 11 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy.js,tag=宠汪汪——午餐 
+cron "0 1 15 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy_feedPets.js,tag=宠汪汪——第五次 
+cron "0 4 18 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy.js,tag=宠汪汪——晚餐 
+cron "0 7 21 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_joy_feedPets.js,tag=宠汪汪——第七次 
+
+# >>> 东东农场 {06:00 12:00 18:00}
+cron "0 0 6-18/6 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_fruit.js,tag=东东农场 
+
+# >>> 种豆得豆系列
+# >>>>> 凌晨时段可以领取一瓶营养液 {00:08}
+cron "0 8 0 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_plantBean.js,tag=种豆得豆——凌晨 
+# >>>>> 其余时段 {22,7-21/2:00}
+cron "0 0 22,7-21/2 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_plantBean.js,tag=种豆得豆——整点时段 
+
+# >>> 东东超市 {00:06 09:06 17:06} (0点可能上架蓝币商品)
+cron "0 6 0,9-17/8 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_superMarket.js,tag=东东超市 
+
+# >>> 摇京豆 {00:08}
+cron "30 8 0 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_club_lottery.js,tag=摇京豆 
+
+# >>> 京东赚赚 {00:09}
+# >>>>> 打开微信, 搜索 "京东赚赚" 小程序即可获取 Cookie, 如果获取失败尝试杀掉微信后台重新一次获取
+cron "0 0 9 * * *",script-path=https://raw.githubusercontent.com/whyour/hundun/master/quanx/jdzz.js,tag=京东赚赚 
+http-request ^https\:\/\/api\.m\.jd\.com\/client\.action\?functionId\=interactIndex, requires-body=0, max-size=0, script-path=https://raw.githubusercontent.com/whyour/hundun/master/quanx/jdzz.cookie.js,tag=京东赚赚获取 Cookie 
+
+# >>> 全民开红包 {00:10}
+cron "0 10 0 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_redPacket.js,tag=全民开红包 
+
+# >>> 进店领豆 {00:10}
+cron "30 10 0 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_shop.js,tag=进店领豆 
+
+# >>> 抽奖机 {00:11}
+cron "0 11 0 * * *",wake-system=1, timeout=600, script-path=https://raw.githubusercontent.com/yangtingxiao/QuantumultX/master/scripts/jd/jd_lotteryMachine.js,tag=抽奖机 
+
+# >>> 天天加速 {1-23/2:05}
+cron "0 5 1-23/2 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_speed.js,tag=天天加速 
+
+# >>> 东东小窝 {00:11}
+cron "30 11 0 * * *",script-path=https://raw.githubusercontent.com/yangtingxiao/QuantumultX/master/scripts/jd/jd_woHome.js,tag=东东小窝 
+
+# >>> 十元街 {00:12}
+cron "0 12 0 * * *",script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_syj.js,tag=十元街 
+
+# > 临时活动
+# >>> 排行榜 (2020.12.31结束)
+cron "0 13 9 * * *",script-path=https://raw.githubusercontent.com/yangtingxiao/QuantumultX/master/scripts/jd/jd_rankingList.js,tag=排行榜 
+
+# > BoxJs TF 
+# >>> 地址在下方,复制到浏览器打开即可
+#boxjs.net
+http-request ^https?://boxjs.net, script-path=https://gitee.com/chavyleung/scripts/raw/master/box/chavy.boxjs.js, requires-body=true, timeout=120,tag=Rewrite: BoxJs 
+[Remote Script]
+https://raw.githubusercontent.com/NobyDa/Script/master/Loon/Loon_GetTask.conf, tag=jd, enabled=true
+https://raw.githubusercontent.com/NobyDa/Script/master/Loon/Loon_GetCookie.conf, tag=cookie, enabled=true
+https://raw.githubusercontent.com/chiupam/Proxy/master/Loon/JD_DailyBonus.conf, tag=jd, enabled=true
+[Plugin]
+https://gitee.com/chavyleung/scripts/raw/master/box/rewrite/boxjs.rewrite.loon.plugin, tag=boxjs, enabled=true
+[Mitm]
+ca-p12 = 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
+ca-passphrase = 8J65U5SY
+skip-server-cert-verify = false
+enable = true
+hostname = api.m.jd.com
